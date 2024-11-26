@@ -31,10 +31,14 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // Carregar despesas quando a tela for carregada
+  // Carregar despesas ao focar na tela
   useEffect(() => {
-    loadExpenses();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadExpenses(); // Atualiza os dados sempre que a tela é focada
+    });
+
+    return unsubscribe; // Limpa o listener ao desmontar o componente
+  }, [navigation]);
 
   // Renderizar o card de cada mês
   const renderMonth = ({ item }) => (

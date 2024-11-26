@@ -18,7 +18,7 @@ const MonthDetailsScreen = ({ route, navigation }) => {
     // Aqui carregamos as despesas salvas para este mês usando AsyncStorage
     const loadExpenses = async () => {
       try {
-        const savedExpenses = await AsyncStorage.getItem(month);
+        const savedExpenses = await AsyncStorage.getItem(`@expenses_${month}`);
         setExpenses(savedExpenses ? JSON.parse(savedExpenses) : []);
       } catch (error) {
         console.error('Erro ao carregar despesas', error);
@@ -28,7 +28,7 @@ const MonthDetailsScreen = ({ route, navigation }) => {
     loadExpenses();
   }, [month]);
 
-  const deleteExpense = (id) => {
+  const deleteExpense = async (id) => {
     Alert.alert(
       'Deletar Despesa',
       'Você tem certeza que deseja deletar esta despesa?',
@@ -36,15 +36,28 @@ const MonthDetailsScreen = ({ route, navigation }) => {
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Deletar',
-          onPress: () => {
-            const updatedExpenses = expenses.filter((item) => item.id !== id);
-            setExpenses(updatedExpenses);
-            AsyncStorage.setItem(month, JSON.stringify(updatedExpenses));
+          onPress: async () => {
+            try {
+              // Filtra as despesas para remover a despesa com o ID fornecido
+              const updatedExpenses = expenses.filter((item) => item.id !== id);
+  
+              // Atualiza o estado
+              setExpenses(updatedExpenses);
+  
+              // Salva a lista atualizada no AsyncStorage
+              await AsyncStorage.setItem(`@expenses_${month}`, JSON.stringify(updatedExpenses));
+  
+              console.log('Despesa deletada com sucesso:', updatedExpenses);
+            } catch (error) {
+              console.error('Erro ao deletar a despesa:', error);
+              Alert.alert('Erro', 'Não foi possível deletar a despesa.');
+            }
           },
         },
       ]
     );
   };
+  
 
   const renderExpense = ({ item }) => (
     <View style={styles.expenseCard}>
